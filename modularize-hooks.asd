@@ -17,5 +17,8 @@
   :description "Generic hooks and triggers extension for modularize."
   :long-description ""
   :serial T
-  :components ((:file "package"))
-  :depends-on (:modularize))
+  :components ((:file "package")
+               (:file "toolkit")
+               (:file "hooks"))
+  :depends-on (:modularize
+               :closer-mop))
