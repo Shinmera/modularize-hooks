@@ -46,7 +46,7 @@
 (defmacro define-hook (name args &optional documentation)
   (assert (symbolp name))
   (let ((name (transform-symbol name)))
-    `(progn
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defgeneric ,name (ident ,@args)
          (:documentation ,documentation))
        (defmethod ,name ((ident null) ,@args)
