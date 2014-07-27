@@ -19,7 +19,9 @@
         (intern (symbol-name module-symbol) package))))
 
 (defun hookify (&optional (module *package*))
-  (make-package (make-hook-package-name module) :use ()))
+  (let ((name (make-hook-package-name module)))
+    (unless (find-package name)
+      (make-package name :use ()))))
 
 (defun dehookify (&optional (module *package*))
   (let ((package (hook-package module)))
