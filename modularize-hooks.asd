@@ -10,7 +10,7 @@
 
 (defsystem modularize-hooks
   :name "Modularize-Hooks"
-  :version "0.0.1"
+  :version "1.0.0"
   :license "Artistic"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
