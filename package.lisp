@@ -4,9 +4,9 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(defpackage org.tymoonnext.radiance.lib.modularize.hooks
+(defpackage #:modularize-hooks
   (:use #:cl #:modularize)
-  (:nicknames #:modularize-hooks #:hooks)
+  (:nicknames #:org.tymoonnext.radiance.lib.modularize.hooks #:hooks)
   ;; hooks.lisp
   (:export
    #:hookify
