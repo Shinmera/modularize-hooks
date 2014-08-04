@@ -15,7 +15,7 @@
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Generic hooks and triggers extension for modularize."
-  :long-description ""
+  :homepage "https://github.com/Shinmera/modularize-hooks"
   :serial T
   :components ((:file "package")
                (:file "toolkit")
