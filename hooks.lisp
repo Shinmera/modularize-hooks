@@ -63,7 +63,8 @@ The name should be a symbol from the module that the hook should belong to."
        (defgeneric ,name (ident ,@args)
          (:documentation ,documentation))
        (defmethod ,name ((ident null) ,@args)
-         (call-all-methods #',name ,@(extract-lambda-vars args))))))
+         (call-all-methods #',name ,@(extract-lambda-vars args)))
+       ',name)))
 
 (defun remove-hook (name)
   "Removes the hook as named."
@@ -91,9 +92,11 @@ the same hook in the same package, use a list of the following structure as the 
     (let* ((name (transform-symbol name))
            (realargs (cdr (function-arguments (symbol-function name)))))
       (assert (or (null args) (function-lambda-matches (symbol-function name) (cons NIL args))))
-      `(defmethod ,name ((,(gensym "IDENT") (eql ,ident)) ,@(or args realargs))
-         ,@(unless args `((declare (ignore ,@(extract-lambda-vars realargs)))))
-         ,@body))))
+      `(progn
+         (defmethod ,name ((,(gensym "IDENT") (eql ,ident)) ,@(or args realargs))
+           ,@(unless args `((declare (ignore ,@(extract-lambda-vars realargs)))))
+           ,@body)
+         ',name))))
 
 (defmacro define-trigger-method (hook &rest args)
   `(defmethod ,(transform-symbol hook) ,@args))
