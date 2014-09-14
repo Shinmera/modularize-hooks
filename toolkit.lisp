@@ -28,9 +28,12 @@
 (defun function-arguments (function)
   "Returns the lambda-list of the function if possible.
 This is only implemented with: SBCL, SWANK, working FUNCTION-LAMBDA-EXPRESSION."
-  #+sbcl (sb-introspect:function-lambda-list function)
+  (assert (or (symbolp function)
+              (listp function))
+          () "Function must be the symbol or list naming the function.")
+  #+sbcl (sb-introspect:function-lambda-list (fdefinition function))
   #+(and swank (not sbcl)) (swank-backend:arglist function)
-  #-(and sbcl swank) (second (nth-value 2 (function-lambda-expression function))))
+  #-(or sbcl swank) (third (function-lambda-expression (fdefinition function))))
 
 (defun required-lambda-vars (lambda-list)
   "Returns the list of required variables in the lambda-list."
