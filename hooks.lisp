@@ -61,7 +61,8 @@ The name should be a symbol from the module that the hook should belong to."
   (let ((name (transform-symbol name)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defgeneric ,name (ident ,@args)
-         (:documentation ,documentation))
+         ,@(when documentation
+             `((:documentation ,documentation))))
        (defmethod ,name ((ident null) ,@args)
          (call-all-methods #',name ,@(extract-lambda-vars args)))
        ',name)))
