@@ -57,8 +57,9 @@ and deletes it."
 (defmacro define-hook (name args &optional documentation)
   "Defines a new hook on which triggers can be defined.
 The name should be a symbol from the module that the hook should belong to."
-  (assert (or (symbolp name) (listp name)))
-  (let ((name (apply #'transform-symbol name)))
+  (let ((name (etypecase name
+                (symbol (transform-symbol name))
+                (list (transform-symbol (first name) (second name))))))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defgeneric ,name (ident ,@args)
          ,@(when documentation
