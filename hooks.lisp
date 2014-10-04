@@ -15,9 +15,9 @@
   (or (find-package (make-hook-package-name module))
       (error "Module is not set up for hooks.")))
 
-(defun transform-symbol (module-symbol)
+(defun transform-symbol (module-symbol &optional (module-package (symbol-package module-symbol)))
   "Transforms the symbol into one from the module's hooks package."
-  (let ((package (hook-package (symbol-package module-symbol))))
+  (let ((package (hook-package module-package)))
     (or (find-symbol (symbol-name module-symbol) package)
         (intern (symbol-name module-symbol) package))))
 
@@ -57,8 +57,8 @@ and deletes it."
 (defmacro define-hook (name args &optional documentation)
   "Defines a new hook on which triggers can be defined.
 The name should be a symbol from the module that the hook should belong to."
-  (assert (symbolp name))
-  (let ((name (transform-symbol name)))
+  (assert (or (symbolp name) (listp name)))
+  (let ((name (apply #'transform-symbol name)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defgeneric ,name (ident ,@args)
          ,@(when documentation
