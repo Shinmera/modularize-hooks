@@ -73,16 +73,21 @@ The name should be a symbol from the module that the hook should belong to."
   (fmakunbound (transform-symbol name)))
 
 (defun %trigger (hook &rest args)
-  (apply (symbol-function (transform-symbol hook)) NIL args))
+  (apply (symbol-function (if (listp hook)
+                              (apply #'transform-symbol hook)
+                              (transform-symbol hook))) NIL args))
 
 (defun trigger (hook &rest args)
   "Calls all triggers registered on the hook with the given arguments."
   (apply #'%trigger hook args))
 
 (define-compiler-macro trigger (hook &rest args)
-  (if (symbolp hook)
-      `(,(transform-symbol hook) ,@args)
-      `(%trigger ,hook ,@args)))
+  (typecase hook
+    (list (when (eql (first hook) 'quote)
+            (if (listp (second hook))
+                `(,(apply #'transform-symbol (second hook)) NIL ,@args)
+                `(,(transform-symbol (second hook)) NIL ,@args))))
+    (T `(%trigger ,hook ,@args))))
 
 (defmacro define-trigger (hook args &body body)
   "Defines a new trigger on the hook.
