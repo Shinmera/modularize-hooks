@@ -21,4 +21,6 @@
                (:file "toolkit")
                (:file "hooks"))
   :depends-on (:modularize
-               :closer-mop))
+               :closer-mop
+               :trivial-arguments
+               :lambda-fiddle))

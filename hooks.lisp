@@ -97,7 +97,7 @@ the same hook in the same package, use a list of the following structure as the 
  (hook trigger-name)"
   (destructuring-bind (name ident) (if (listp hook) hook (list hook *package*))
     (let* ((name (transform-symbol name))
-           (realargs (cdr (function-arguments name))))
+           (realargs (cdr (arglist name))))
       (assert (or (null args) (function-lambda-matches name (cons NIL args))))
       `(progn
          (defmethod ,name ((,(gensym "IDENT") (eql ,ident)) ,@(or args realargs))
@@ -113,5 +113,5 @@ the same hook in the same package, use a list of the following structure as the 
   (let* ((name (transform-symbol hook))
          (func (symbol-function name))
          (ident (or ident *package*))
-         (spec (or specializers (required-lambda-vars (cdr (function-arguments name))))))
+         (spec (or specializers (required-lambda-vars (cdr (arglist name))))))
     (remove-method func (find-method func '() `((eql ,ident) ,@(mapcar (constantly T) spec))))))

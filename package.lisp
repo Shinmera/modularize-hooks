@@ -5,7 +5,7 @@
 |#
 
 (defpackage #:modularize-hooks
-  (:use #:cl #:modularize)
+  (:use #:cl #:modularize #:lambda-fiddle #:trivial-arguments)
   (:nicknames #:org.tymoonnext.radiance.lib.modularize.hooks #:hooks)
   ;; hooks.lisp
   (:export
