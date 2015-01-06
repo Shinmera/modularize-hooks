@@ -4,9 +4,10 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
+(in-package #:cl-user)
 (defpackage #:modularize-hooks
   (:use #:cl #:modularize #:lambda-fiddle #:trivial-arguments)
-  (:nicknames #:org.tymoonnext.radiance.lib.modularize.hooks #:hooks)
+  (:nicknames #:org.shirakumo.radiance.lib.modularize.hooks #:hooks)
   ;; hooks.lisp
   (:export
    #:hookify

@@ -4,11 +4,8 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(defpackage org.tymoonnext.radiance.lib.modularize.hooks.asdf
-  (:use #:cl #:asdf))
-(in-package :org.tymoonnext.radiance.lib.modularize.hooks.asdf)
-
-(defsystem modularize-hooks
+(in-package #:cl-user)
+(asdf:defsystem modularize-hooks
   :name "Modularize-Hooks"
   :version "1.0.2"
   :license "Artistic"

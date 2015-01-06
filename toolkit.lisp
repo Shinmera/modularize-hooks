@@ -4,7 +4,7 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(in-package #:org.tymoonnext.radiance.lib.modularize.hooks)
+(in-package #:org.shirakumo.radiance.lib.modularize.hooks)
 
 (defun function-lambda-matches (function lambda-list)
   "Returns T if the function matches the lambda-list in arguments.

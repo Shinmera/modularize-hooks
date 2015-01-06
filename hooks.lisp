@@ -4,7 +4,7 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(in-package #:org.tymoonnext.radiance.lib.modularize.hooks)
+(in-package #:org.shirakumo.radiance.lib.modularize.hooks)
 
 (defun make-hook-package-name (module)
   "Returns a fitting hooks package name for the given module."
@@ -50,9 +50,11 @@ and deletes it."
   "Calls all methods of the generic function with the given arguments."
   (loop for method in (c2mop:generic-function-methods gf)
         unless (method-qualifiers method)
-          do (let ((ident (first (c2mop:method-specializers method))))
-               (when (typep ident 'c2mop:eql-specializer)
-                 (apply gf (c2mop:eql-specializer-object ident) args)))))
+        do (let ((ident (first (c2mop:method-specializers method))))
+             (when (typep ident 'c2mop:eql-specializer)
+               (with-simple-restart (skip-hook "Skip calling the hook for ~a."
+                                               (c2mop:eql-specializer-object ident))
+                 (apply gf (c2mop:eql-specializer-object ident) args))))))
 
 (defmacro define-hook (name args &optional documentation)
   "Defines a new hook on which triggers can be defined.
@@ -65,7 +67,8 @@ The name should be a symbol from the module that the hook should belong to."
          ,@(when documentation
              `((:documentation ,documentation))))
        (defmethod ,name ((ident null) ,@args)
-         (call-all-methods #',name ,@(extract-lambda-vars args)))
+         (with-simple-restart (skip-trigger ,(format NIL "Skip triggering ~a" name))
+           (call-all-methods #',name ,@(extract-lambda-vars args))))
        ',name)))
 
 (defun remove-hook (name)
