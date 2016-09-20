@@ -1,167 +1,86 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8"/>
-    <title>MODULARIZE-HOOKS</title>
-    <style type="text/css">
-      code a{text-decoration:none;}
-      h1{display:inline-block;font-size: 28pt;margin-bottom:0;}
-      code{font-family: Consolas, Inconsolata, monospace;}
-      h4{display: inline-block;margin:0;padding:0;}
-      ul{list-style: none;}
-      .package li{margin-bottom: 20px;}
-      .package pre{margin: 0 0 0 10px; white-space: pre-wrap;}
-      .package .nicknames{font-size: 12pt; font-weight: normal;}
-      table{margin: 20px;}
-      td{padding-bottom: 10px;}
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>modularize-hooks</h1>
-      <span>1.0.0</span>
-      <p>Generic hooks and triggers extension for modularize.</p>
-    </header>
-    <div id="content">
-      <article>
-        <documentate>
-          <span><h2>About Modularize-Hooks</h2>
+<!DOCTYPE html> <html xmlns="http://www.w3.org/1999/xhtml"> <head> <meta charset="utf-8"/> <title>Modularize-Hooks</title> <meta name="viewport" content="width=device-width"/> <meta name="description" content="Generic hooks and triggers extension for modularize."/> <meta name="author" content="Nicolas Hafner &lt;shinmera@tymoon.eu&gt;"/> <style type="text/css"> body{
+          max-width: 1024px;
+          margin: 0 auto 0 auto;
+          font-family: sans-serif;
+          color: #333333;
+          font-size: 14pt;
+          padding: 5px;
+      }
 
-<p>This is a simple extension to <a href="https://github.com/Shinmera/modularize">Modularize</a> that allows modules to define and trigger hooks, which other modules can... well, hook on to. While such a system is very easy to create for your own projects, it's a good idea to have a standard form of doing it that doesn't interfere in any other way. </p>
+      body>header{
+          display:flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          max-width: 100%;
+      }
 
-<h2>How To</h2>
+      img{
+          max-width: 100%;
+          max-height: 100%;
+      }
 
-<p>In order to define hooks, you need to have a module. See <a href="https://github.com/Shinmera/modularize">Modularize</a> on how to get that set up. If the modularize-hooks system has already been loaded prior to your module definition, everything should be ready and set up. Otherwise, you may call <code><a href="#MODULARIZE-HOOKS:HOOKIFY">HOOKIFY</a></code> on your module to initialise it. Creating hooks is similar to creating generic functions:</p>
+      code{
+          font-family: Consolas, Inconsolata, monospace;
+      }
 
-<pre><code>(<a href="#MODULARIZE-HOOKS:DEFINE-HOOK">define-hook</a> documentation-finished (project)
-  &quot;Hook called whenever documentation for a project is finished.&quot;)</code></pre>
+      a{
+          text-decoration: none;
+          color: #0055AA;
+      }
 
-<p>This defines a hook with a single argument, the project. In order to latch on to this hook, you may define a trigger. It is not strictly necessary to be within a module context to define triggers, but it is recommended in order to keep things tidy.</p>
+      #documentation{
+          text-align: justify;
+      }
 
-<pre><code>(<a href="#MODULARIZE-HOOKS:DEFINE-TRIGGER">define-trigger</a> other-module:documentation-finished (project)
-  (<a href="http://l1sp.org/cl/FORMAT">format</a> T &quot;~&amp;Finished project documentation for ~a&quot; project))</code></pre>
+      #documentation pre{
+          margin-left: 20px;
+      }
 
-<p>If you want to have multiple triggers on the same hook within the same package, you need to specify some kind of identifier to distinguish it from others.</p>
+      #symbol-index>ul{
+          list-style: none;
+          padding: 0;
+      }
+      #symbol-index .package>ul{
+          list-style: none;
+          padding: 0 0 0 10px;
+      }
+      #symbol-index .package .nicknames{
+          font-weight: normal;
+      }
+      #symbol-index .package h4{
+          display: inline-block;
+          margin: 0;
+      }
+      #symbol-index .package article{
+          margin: 0 0 15px 0;
+      }
+      #symbol-index .package article header{
+          font-size: 1.2em;
+          font-weight: normal;
+      }
+      #symbol-index .package .name{
+          margin-right: 5px;
+      }
+      #symbol-index .package .docstring{
+          margin: 0 0 0 15px;
+          white-space: pre-wrap;
+          font-size: 12pt;
+      }
 
-<pre><code>(<a href="#MODULARIZE-HOOKS:DEFINE-TRIGGER">define-trigger</a> (other-module:documentation-finished extra) ()
-  (<a href="http://l1sp.org/cl/FORMAT">format</a> T &quot;~&amp;ゆっくりしていってね！！！&quot;))</code></pre>
-
-<p>Note that in this second example we did not provide any arguments to the trigger. Triggers may either accept no arguments if they have no use for them, or they need to match the arguments list of the hook. A simple test to assert this is done on trigger definition. Actually triggering the hook with its trigger is merely a question of calling <code><a href="#MODULARIZE-HOOKS:TRIGGER">TRIGGER</a></code>:</p>
-
-<pre><code>(<a href="#MODULARIZE-HOOKS:TRIGGER">trigger</a> 'other-module:documentation-finished :modularize-hooks)</code></pre>
-</span>
-        </documentate>
-      </article>
-      <article>
-        <h2>Copyright</h2>
-        <span>modularize-hooks</span> is licensed under the <span><a href="https://tldrlegal.com/search?q=Artistic">Artistic</a></span> license and ©<span>2014</span> <span>Nicolas Hafner &lt;shinmera@tymoon.eu&gt;</span>. 
-      </article>
-      <article>
-        <h2>Package Index</h2>
-        <ul><li class="package">
-            <h3>
-              <a name="MODULARIZE-HOOKS" href="#MODULARIZE-HOOKS">MODULARIZE-HOOKS</a>
-              <span class="nicknames">(HOOKS ORG.TYMOONNEXT.RADIANCE.LIB.MODULARIZE.HOOKS)</span>
-            </h3>
-            <ul><li>
-                <a name="MODULARIZE-HOOKS:DEHOOKIFY"/>
-                <article>
-                  <header>
-                    <span>FUNCTION</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:DEHOOKIFY">DEHOOKIFY</a></h4>
-                      <span></span>
-                      <span>(&amp;OPTIONAL (MODULE *PACKAGE*))</span>
-                    </code>
-                  </header>
-                  <pre>Returns the module to one that is not capable of hooks.
+      @media (max-width: 800px){
+          body{font-size: 12pt;}
+      } </style> </head> <body> <header> <h1>modularize-hooks</h1> <span class="version">1.0.2</span> <p class="description">Generic hooks and triggers extension for modularize.</p> </header> <main> <article id="documentation">  <div><h2>About Modularize-Hooks</h2> <p>This is a simple extension to <a href="https://github.com/Shinmera/modularize">Modularize</a> that allows modules to define and trigger hooks, which other modules can... well, hook on to. While such a system is very easy to create for your own projects, it's a good idea to have a standard form of doing it that doesn't interfere in any other way. </p> <h2>How To</h2> <p>In order to define hooks, you need to have a module. See <a href="https://github.com/Shinmera/modularize">Modularize</a> on how to get that set up. If the modularize-hooks system has already been loaded prior to your module definition, everything should be ready and set up. Otherwise, you may call <code><a href="#MODULARIZE-HOOKS:HOOKIFY">HOOKIFY</a></code> on your module to initialise it. Creating hooks is similar to creating generic functions:</p> <pre><code>(<a href="#MODULARIZE-HOOKS:DEFINE-HOOK">define-hook</a> documentation-finished (project)
+  &quot;Hook called whenever documentation for a project is finished.&quot;)</code></pre> <p>This defines a hook with a single argument, the project. In order to latch on to this hook, you may define a trigger. It is not strictly necessary to be within a module context to define triggers, but it is recommended in order to keep things tidy.</p> <pre><code>(<a href="#MODULARIZE-HOOKS:DEFINE-TRIGGER">define-trigger</a> other-module:documentation-finished (project)
+  (<a href="http://l1sp.org/cl/format">format</a> T &quot;~&amp;Finished project documentation for ~a&quot; project))</code></pre> <p>If you want to have multiple triggers on the same hook within the same package, you need to specify some kind of identifier to distinguish it from others.</p> <pre><code>(<a href="#MODULARIZE-HOOKS:DEFINE-TRIGGER">define-trigger</a> (other-module:documentation-finished extra) ()
+  (<a href="http://l1sp.org/cl/format">format</a> T &quot;~&amp;ゆっくりしていってね！！！&quot;))</code></pre> <p>Note that in this second example we did not provide any arguments to the trigger. Triggers may either accept no arguments if they have no use for them, or they need to match the arguments list of the hook. A simple test to assert this is done on trigger definition. Actually triggering the hook with its trigger is merely a question of calling <code><a href="#MODULARIZE-HOOKS:TRIGGER">TRIGGER</a></code>:</p> <pre><code>(<a href="#MODULARIZE-HOOKS:TRIGGER">trigger</a> 'other-module:documentation-finished :modularize-hooks)</code></pre> </div>  </article> <article id="copyright">  <h2>Copyright</h2> <span>modularize-hooks</span> is licensed under the <span><a href="https://tldrlegal.com/search?q=Artistic">Artistic</a></span> license.  © <span>Nicolas Hafner &lt;shinmera@tymoon.eu&gt;</span> .  This library can be obtained on <a href="https://github.com/Shinmera/modularize-hooks">https://github.com/Shinmera/modularize-hooks</a>.  </article>  <article id="symbol-index"> <h2>Package Index</h2> <ul><li class="package"> <h3> <a name="MODULARIZE-HOOKS" href="#MODULARIZE-HOOKS">MODULARIZE-HOOKS</a> <span class="nicknames">(HOOKS ORG.SHIRAKUMO.RADIANCE.LIB.MODULARIZE.HOOKS)</span> </h3> <ul><li> <a name="MODULARIZE-HOOKS:DEHOOKIFY"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:DEHOOKIFY">DEHOOKIFY</a></code></h4> <code class="qualifiers"></code> <code class="arguments">&amp;OPTIONAL (MODULE *PACKAGE*)</code><code>)</code>  </header> <pre class="docstring">Returns the module to one that is not capable of hooks.
 
 In essence this merely removes all functions from the hooks package
-and deletes it.</pre>
-                </article>
-              </li><li>
-                <a name="MODULARIZE-HOOKS:HOOKIFY"/>
-                <article>
-                  <header>
-                    <span>FUNCTION</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:HOOKIFY">HOOKIFY</a></h4>
-                      <span></span>
-                      <span>(&amp;OPTIONAL (MODULE *PACKAGE*))</span>
-                    </code>
-                  </header>
-                  <pre>Turns the module into one capable of hooks.
+and deletes it.</pre> </article> </li><li> <a name="MODULARIZE-HOOKS:HOOKIFY"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:HOOKIFY">HOOKIFY</a></code></h4> <code class="qualifiers"></code> <code class="arguments">&amp;OPTIONAL (MODULE *PACKAGE*)</code><code>)</code>  </header> <pre class="docstring">Turns the module into one capable of hooks.
 
-In essence this merely defines a new package with a matching name.</pre>
-                </article>
-              </li><li>
-                <a name="MODULARIZE-HOOKS:REMOVE-HOOK"/>
-                <article>
-                  <header>
-                    <span>FUNCTION</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:REMOVE-HOOK">REMOVE-HOOK</a></h4>
-                      <span></span>
-                      <span>(NAME)</span>
-                    </code>
-                  </header>
-                  <pre>Removes the hook as named.</pre>
-                </article>
-              </li><li>
-                <a name="MODULARIZE-HOOKS:REMOVE-TRIGGER"/>
-                <article>
-                  <header>
-                    <span>FUNCTION</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:REMOVE-TRIGGER">REMOVE-TRIGGER</a></h4>
-                      <span></span>
-                      <span>(HOOK &amp;OPTIONAL IDENT SPECIALIZERS)</span>
-                    </code>
-                  </header>
-                  <pre>Attempts to remove the trigger from the hook.</pre>
-                </article>
-              </li><li>
-                <a name="MODULARIZE-HOOKS:TRIGGER"/>
-                <article>
-                  <header>
-                    <span>FUNCTION</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:TRIGGER">TRIGGER</a></h4>
-                      <span></span>
-                      <span>(HOOK &amp;REST ARGS)</span>
-                    </code>
-                  </header>
-                  <pre>Calls all triggers registered on the hook with the given arguments.</pre>
-                </article>
-              </li><li>
-                <a name="MODULARIZE-HOOKS:DEFINE-HOOK"/>
-                <article>
-                  <header>
-                    <span>MACRO</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:DEFINE-HOOK">DEFINE-HOOK</a></h4>
-                      <span></span>
-                      <span>(NAME ARGS &amp;OPTIONAL DOCUMENTATION)</span>
-                    </code>
-                  </header>
-                  <pre>Defines a new hook on which triggers can be defined.
-The name should be a symbol from the module that the hook should belong to.</pre>
-                </article>
-              </li><li>
-                <a name="MODULARIZE-HOOKS:DEFINE-TRIGGER"/>
-                <article>
-                  <header>
-                    <span>MACRO</span>
-                    <code>
-                      <h4><a href="#MODULARIZE-HOOKS:DEFINE-TRIGGER">DEFINE-TRIGGER</a></h4>
-                      <span></span>
-                      <span>(HOOK ARGS &amp;BODY BODY)</span>
-                    </code>
-                  </header>
-                  <pre>Defines a new trigger on the hook.
+In essence this merely defines a new package with a matching name.</pre> </article> </li><li> <a name="MODULARIZE-HOOKS:REMOVE-HOOK"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:REMOVE-HOOK">REMOVE-HOOK</a></code></h4> <code class="qualifiers"></code> <code class="arguments">NAME</code><code>)</code>  </header> <pre class="docstring">Removes the hook as named.</pre> </article> </li><li> <a name="MODULARIZE-HOOKS:REMOVE-TRIGGER"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:REMOVE-TRIGGER">REMOVE-TRIGGER</a></code></h4> <code class="qualifiers"></code> <code class="arguments">HOOK &amp;OPTIONAL IDENT SPECIALIZERS</code><code>)</code>  </header> <pre class="docstring">Attempts to remove the trigger from the hook.</pre> </article> </li><li> <a name="MODULARIZE-HOOKS:TRIGGER"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:TRIGGER">TRIGGER</a></code></h4> <code class="qualifiers"></code> <code class="arguments">HOOK &amp;REST ARGS</code><code>)</code>  </header> <pre class="docstring">Calls all triggers registered on the hook with the given arguments.</pre> </article> </li><li> <a name="MODULARIZE-HOOKS:DEFINE-HOOK"> </a> <article> <header class="macro"> <span class="type">macro</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:DEFINE-HOOK">DEFINE-HOOK</a></code></h4> <code class="qualifiers"></code> <code class="arguments">&amp;REST ARGS</code><code>)</code>  </header> <pre class="docstring">Defines a new hook on which triggers can be defined.
+The name should be a symbol from the module that the hook should belong to.</pre> </article> </li><li> <a name="MODULARIZE-HOOKS:DEFINE-TRIGGER"> </a> <article> <header class="macro"> <span class="type">macro</span>  <code>(</code><h4 class="name"><code><a href="#MODULARIZE-HOOKS:DEFINE-TRIGGER">DEFINE-TRIGGER</a></code></h4> <code class="qualifiers"></code> <code class="arguments">&amp;REST ARGS</code><code>)</code>  </header> <pre class="docstring">Defines a new trigger on the hook.
 A trigger can either accept no arguments or it has to match the hook in its arguments list.
 The name of the trigger defaults to the *PACKAGE*. If you want to have multiple triggers for
 the same hook in the same package, use a list of the following structure as the HOOK argument:
- (hook trigger-name)</pre>
-                </article>
-              </li></ul></li></ul></article></div></body></html>
+ (hook trigger-name)</pre> </article> </li></ul> </li></ul> </article>  </main> </body> </html> 
