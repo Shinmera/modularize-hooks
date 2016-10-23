@@ -29,15 +29,18 @@ In essence this merely defines a new package with a matching name."
     (unless (find-package name)
       (make-package name :use ()))))
 
+(defun list-hooks (&optional (module *package*))
+  (loop for symbol being the symbols of (hook-package module)
+        when (fboundp symbol) collect symbol))
+
 (defun dehookify (&optional (module *package*))
   "Returns the module to one that is not capable of hooks.
 
 In essence this merely removes all functions from the hooks package
 and deletes it."
   (let ((package (hook-package module)))
-    (do-symbols (symbol package)
-      (when (fboundp symbol)
-        (fmakunbound symbol)))
+    (dolist (hook (list-hooks module))
+      (fmakunbound hook))
     (delete-package package)))
 
 (define-modularize-hook (module)

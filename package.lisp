@@ -12,6 +12,7 @@
   (:export
    #:hookify
    #:dehookify
+   #:list-hooks
    #:define-hook
    #:remove-hook
    #:trigger
