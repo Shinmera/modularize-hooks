@@ -6,42 +6,23 @@
 
 (in-package #:org.shirakumo.radiance.lib.modularize.hooks)
 
-(defun make-hook-package-name (module)
-  "Returns a fitting hooks package name for the given module."
-  (format NIL "~a.HOOKS" (module-identifier module)))
-
-(defun hook-package (module)
-  "Returns the hooks package of the module or signals an error if none can be found."
-  (or (find-package (make-hook-package-name module))
-      (error "Module is not set up for hooks.")))
-
-(defun transform-symbol (module-symbol &optional (module-package (symbol-package module-symbol)))
-  "Transforms the symbol into one from the module's hooks package."
-  (let ((package (hook-package module-package)))
-    (or (find-symbol (symbol-name module-symbol) package)
-        (intern (symbol-name module-symbol) package))))
+(defun enlist (a &rest args)
+  (if (listp a) a (list* a args)))
 
 (defun hookify (&optional (module *package*))
   "Turns the module into one capable of hooks.
 
 In essence this merely defines a new package with a matching name."
-  (let ((name (make-hook-package-name module)))
-    (unless (find-package name)
-      (make-package name :use ()))))
-
-(defun list-hooks (&optional (module *package*))
-  (loop for symbol being the symbols of (hook-package module)
-        when (fboundp symbol) collect symbol))
+  (unless (module-storage module 'hooks)
+    (setf (module-storage module 'hooks)
+          (make-hash-table :test 'eql))))
 
 (defun dehookify (&optional (module *package*))
   "Returns the module to one that is not capable of hooks.
 
 In essence this merely removes all functions from the hooks package
 and deletes it."
-  (let ((package (hook-package module)))
-    (dolist (hook (list-hooks module))
-      (fmakunbound hook))
-    (delete-package package)))
+  (setf (module-storage module 'hooks) NIL))
 
 (define-modularize-hook (module)
   (hookify module))
@@ -49,75 +30,117 @@ and deletes it."
 (define-delete-hook (module)
   (dehookify module))
 
-(defun call-all-methods (gf &rest args)
-  "Calls all methods of the generic function with the given arguments."
-  (loop for method in (c2mop:generic-function-methods gf)
-        unless (method-qualifiers method)
-        do (let ((ident (first (c2mop:method-specializers method))))
-             (when (typep ident 'c2mop:eql-specializer)
-               (with-simple-restart (skip-hook "Skip calling the hook for ~a."
-                                               (c2mop:eql-specializer-object ident))
-                 (apply gf (c2mop:eql-specializer-object ident) args))))))
+(defclass hook ()
+  ((name :initarg :name :accessor name)
+   (arglist :initarg :arglist :accessor arglist)
+   (triggers :initform (make-hash-table :test 'eql) :accessor triggers)
+   (docstring :initarg :docstring :accessor docstring))
+  (:default-initargs
+   :name (error "NAME required.")
+   :arglist ()
+   :docstring NIL))
+
+(defmethod print-object ((hook hook) stream)
+  (print-unreadable-object (hook stream :type T)
+    (format stream "~a" (name hook))))
+
+(defun list-hooks (&optional (module *package*))
+  (loop for k being the hash-keys of (module-storage module 'hooks)
+        collect k))
+
+(defun hook (name &optional (module *package*) error)
+  (or (gethash name (module-storage module 'hooks))
+      (and error (error "No such hook ~s found in ~a." name module))))
+
+(defun (setf hook) (hook name &optional (module *package*))
+  (setf (gethash name (module-storage module 'hooks)) hook))
+
+(defun remove-hook (name &optional (module *package*))
+  "Removes the hook as named."
+  (remhash name (module-storage module 'hooks)))
 
 (defmacro define-hook (name args &optional documentation)
   "Defines a new hook on which triggers can be defined.
 The name should be a symbol from the module that the hook should belong to."
-  (let ((name (etypecase name
-                (symbol (transform-symbol name))
-                (list (transform-symbol (first name) (second name))))))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (defgeneric ,name (ident ,@args)
-         ,@(when documentation
-             `((:documentation ,documentation))))
-       (defmethod ,name ((ident null) ,@args)
-         (with-simple-restart (skip-trigger ,(format NIL "Skip triggering ~a" name))
-           (call-all-methods #',name ,@(extract-lambda-vars args))))
-       ',name)))
+  (destructuring-bind (name &optional (module (symbol-package name)) (class ''hook)) (enlist name)
+    (let ((hookg (gensym "HOOK"))
+          (args `(:arglist ',args
+                  :docstring ,documentation)))
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         (let ((,hookg (hook ',name ,(module module))))
+           (cond ((typep ,hookg ,class)
+                  (change-class ,hookg ,class ,@args))
+                 (,hookg
+                  (reinitialize-instance ,hookg ,@args))
+                 (T
+                  (setf (hook ',name ,(module module))
+                        (make-instance ,class :name ',name ,@args)))))
+         ',name))))
 
-(defun remove-hook (name)
-  "Removes the hook as named."
-  (fmakunbound (transform-symbol name)))
+(defmethod run-triggers ((hook hook) args)
+  (with-simple-restart (abort "Abort triggering ~s." (name hook))
+    (loop for name being the hash-keys of (triggers hook)
+          for function being the hash-values of (triggers hook)
+          do (with-simple-restart (continue "Skip triggering ~s." name)
+               (apply function args)))))
 
-(defun %trigger (hook &rest args)
-  (apply (symbol-function (if (listp hook)
-                              (apply #'transform-symbol hook)
-                              (transform-symbol hook))) NIL args))
+(defmethod find-trigger (name (hook hook))
+  (gethash name (triggers hook)))
 
-(defun trigger (hook &rest args)
-  "Calls all triggers registered on the hook with the given arguments."
-  (apply #'%trigger hook args))
+(defmethod (setf find-trigger) ((function function) name (hook hook))
+  (setf (gethash name (triggers hook)) function))
 
-(define-compiler-macro trigger (hook &rest args)
-  (typecase hook
-    (list (when (eql (first hook) 'quote)
-            (if (listp (second hook))
-                `(,(apply #'transform-symbol (second hook)) NIL ,@args)
-                `(,(transform-symbol (second hook)) NIL ,@args))))
-    (T `(%trigger ,hook ,@args))))
+(defmethod (setf find-trigger) ((null null) name (hook hook))
+  (remhash name (triggers hook)))
+
+(defun remove-trigger (hook &optional (ident *package*) (module (symbol-package hook)))
+  "Attempts to remove the trigger from the hook."
+  (setf (find-trigger ident (hook hook module T)) NIL))
 
 (defmacro define-trigger (hook args &body body)
   "Defines a new trigger on the hook.
 A trigger can either accept no arguments or it has to match the hook in its arguments list.
 The name of the trigger defaults to the *PACKAGE*. If you want to have multiple triggers for
 the same hook in the same package, use a list of the following structure as the HOOK argument:
- (hook trigger-name)"
-  (destructuring-bind (name ident) (if (listp hook) hook (list hook *package*))
-    (let* ((name (transform-symbol name))
-           (realargs (cdr (arglist name))))
-      (assert (or (null args) (function-lambda-matches name (cons NIL args))))
+ (hook trigger-name hook-module)"
+  (destructuring-bind (name &optional (ident *package*) (module (symbol-package name))) (enlist hook)
+    (let* ((hook (hook name module T))
+           (realargs (arglist hook)))
+      (when (and args
+                 (not (function-lambda-matches realargs args)))
+        (error "Lambda-list ~a does not match required list ~a."
+               args realargs))
       `(progn
-         (defmethod ,name ((,(gensym "IDENT") (eql ,ident)) ,@(or args realargs))
-           ,@(unless args `((declare (ignore ,@(extract-lambda-vars realargs)))))
-           ,@body)
-         ',name))))
+         (setf (find-trigger ',ident (hook ',name ,module))
+               (lambda ,(or args realargs)
+                 ,@(unless args `((declare (ignore ,@(extract-lambda-vars realargs)))))
+                 ,@body))
+         '(,name ,ident)))))
 
-(defmacro define-trigger-method (hook &rest args)
-  `(defmethod ,(transform-symbol hook) ,@args))
+(defun trigger (hook &rest args)
+  "Calls all triggers registered on the hook with the given arguments."
+  (let ((hook (if (listp hook)
+                  (hook (second hook) (first hook))
+                  (hook hook (symbol-package hook)))))
+    (run-triggers hook args)))
 
-(defun remove-trigger (hook &optional ident specializers)
-  "Attempts to remove the trigger from the hook."
-  (let* ((name (transform-symbol hook))
-         (func (symbol-function name))
-         (ident (or ident *package*))
-         (spec (or specializers (required-lambda-vars (cdr (arglist name))))))
-    (remove-method func (find-method func '() `((eql ,ident) ,@(mapcar (constantly T) spec))))))
+;; Sticky
+
+(defclass sticky-hook (hook)
+  ((stuck-args :accessor stuck-args)))
+
+(defmethod run-triggers :after ((hook sticky-hook) args)
+  (setf (stuck-args hook) args))
+
+(defmethod (setf find-trigger) :after ((function function) name (hook sticky-hook))
+  (when (slot-boundp hook 'stuck-args)
+    (apply function (stuck-args hook))))
+
+(defmacro define-hook-switch (on off args)
+  (destructuring-bind (on &optional (on-mod (symbol-package on))) (enlist on)
+    (destructuring-bind (off &optional (off-mod (symbol-package off))) (enlist off)
+      `(progn
+         (define-hook (,on ,on-mod 'sticky-hook) ,args)
+         (define-hook (,off ,off-mod 'hook) ,args)
+         (define-trigger (,off unstick-hook) ()
+           (slot-makunbound (hook ',on ,on-mod) 'stuck-args))))))

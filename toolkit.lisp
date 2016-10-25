@@ -6,11 +6,11 @@
 
 (in-package #:org.shirakumo.radiance.lib.modularize.hooks)
 
-(defun function-lambda-matches (function lambda-list)
+(defun function-lambda-matches (cur act)
   "Returns T if the function matches the lambda-list in arguments.
 As a secondary value it returns a reason as to why it may have failed the test."
-  (let ((lambda-cur (remove-aux-part (arglist function)))
-        (lambda-act (remove-aux-part lambda-list)))
+  (let ((lambda-cur (remove-aux-part cur))
+        (lambda-act (remove-aux-part act)))
     (cond
       ((/= (length lambda-cur) (length lambda-act))
        (values NIL "Lambda-lists do not match in length."))
