@@ -62,19 +62,25 @@ and deletes it."
 (defmacro define-hook (name args &optional documentation)
   "Defines a new hook on which triggers can be defined.
 The name should be a symbol from the module that the hook should belong to."
-  (destructuring-bind (name &optional (module (symbol-package name)) (class ''hook)) (enlist name)
+  (destructuring-bind (name &optional (module (symbol-package name)) (class 'hook)) (enlist name)
     (let ((hookg (gensym "HOOK"))
-          (args `(:arglist ',args
-                  :docstring ,documentation)))
+          (initargs `(:arglist ',args
+                      :docstring ,documentation)))
+      ;; Make sure it's available at macro-expansion time to allow
+      ;; defining triggers at the same time as hooks.
+      (unless (hook name module)
+        (setf (hook name module) (make-instance class :name name
+                                                      :arglist args
+                                                      :docstring documentation)))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
-         (let ((,hookg (hook ',name ,(module module))))
-           (cond ((typep ,hookg ,class)
-                  (change-class ,hookg ,class ,@args))
+         (let ((,hookg (hook ',name ,module)))
+           (cond ((typep ,hookg ',class)
+                  (change-class ,hookg ',class ,@initargs))
                  (,hookg
-                  (reinitialize-instance ,hookg ,@args))
+                  (reinitialize-instance ,hookg ,@initargs))
                  (T
-                  (setf (hook ',name ,(module module))
-                        (make-instance ,class :name ',name ,@args)))))
+                  (setf (hook ',name ,module)
+                        (make-instance ',class :name ',name ,@initargs)))))
          ',name))))
 
 (defmethod run-triggers ((hook hook) args)
@@ -104,10 +110,8 @@ The name of the trigger defaults to the *PACKAGE*. If you want to have multiple 
 the same hook in the same package, use a list of the following structure as the HOOK argument:
  (hook trigger-name hook-module)"
   (destructuring-bind (name &optional (ident *package*) (module (symbol-package name))) (enlist hook)
-    (let* ((hook (hook name module T))
-           (realargs (arglist hook)))
-      (when (and args
-                 (not (function-lambda-matches realargs args)))
+    (let ((realargs (arglist (hook name module T))))
+      (when (and args (not (function-lambda-matches realargs args)))
         (error "Lambda-list ~a does not match required list ~a."
                args realargs))
       `(progn
@@ -140,7 +144,7 @@ the same hook in the same package, use a list of the following structure as the 
   (destructuring-bind (on &optional (on-mod (symbol-package on))) (enlist on)
     (destructuring-bind (off &optional (off-mod (symbol-package off))) (enlist off)
       `(progn
-         (define-hook (,on ,on-mod 'sticky-hook) ,args)
-         (define-hook (,off ,off-mod 'hook) ,args)
+         (define-hook (,on ,on-mod sticky-hook) ,args)
+         (define-hook (,off ,off-mod hook) ,args)
          (define-trigger (,off unstick-hook) ()
            (slot-makunbound (hook ',on ,on-mod) 'stuck-args))))))
