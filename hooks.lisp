@@ -124,7 +124,7 @@ the same hook in the same package, use a list of the following structure as the 
 (defun trigger (hook &rest args)
   "Calls all triggers registered on the hook with the given arguments."
   (let ((hook (if (listp hook)
-                  (hook (second hook) (first hook))
+                  (hook (first hook) (second hook))
                   (hook hook (symbol-package hook)))))
     (run-triggers hook args)))
 
