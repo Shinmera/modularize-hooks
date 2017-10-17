@@ -54,14 +54,14 @@ and deletes it."
   (loop for k being the hash-keys of (module-storage module 'hooks)
         collect k))
 
-(defun hook (name &optional (module *package*) error)
+(defun hook (name &optional (module (symbol-package name)) error)
   (or (gethash name (module-storage module 'hooks))
       (and error (error "No such hook ~s found in ~a." name module))))
 
-(defun (setf hook) (hook name &optional (module *package*))
+(defun (setf hook) (hook name &optional (module (symbol-package name)))
   (setf (gethash name (module-storage module 'hooks)) hook))
 
-(defun remove-hook (name &optional (module *package*))
+(defun remove-hook (name &optional (module (symbol-package name)))
   "Removes the hook as named."
   (remhash name (module-storage module 'hooks)))
 
