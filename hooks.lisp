@@ -50,6 +50,12 @@ and deletes it."
 (defmethod documentation ((symbol symbol) (doc-type (eql 'hook)))
   (docstring (hook symbol (symbol-package symbol) T)))
 
+(defmethod (setf documentation) (docstring (hook hook) (doc-type (eql T)))
+  (setf (docstring hook) docstring))
+
+(defmethod (setf documentation) (docstring (symbol symbol) (doc-type (eql 'hook)))
+  (setf (docstring (hook symbol (symbol-package symbol) T)) docstring))
+
 (defun list-hooks (&optional (module *package*))
   (loop for k being the hash-keys of (module-storage module 'hooks)
         collect k))
