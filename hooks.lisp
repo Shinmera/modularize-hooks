@@ -44,6 +44,12 @@ and deletes it."
   (print-unreadable-object (hook stream :type T)
     (format stream "~a" (name hook))))
 
+(defmethod documentation ((hook hook) (doc-type (eql T)))
+  (docstring hook))
+
+(defmethod documentation ((symbol symbol) (doc-type (eql 'hook)))
+  (docstring (hook symbol (symbol-package symbol) T)))
+
 (defun list-hooks (&optional (module *package*))
   (loop for k being the hash-keys of (module-storage module 'hooks)
         collect k))

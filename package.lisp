@@ -13,6 +13,9 @@
    #:hookify
    #:dehookify
    #:hook
+   #:name
+   #:arglist
+   #:docstring
    #:list-hooks
    #:define-hook
    #:remove-hook
