@@ -8,7 +8,7 @@
 (asdf:defsystem modularize-hooks
   :name "Modularize-Hooks"
   :version "1.0.2"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Generic hooks and triggers extension for modularize."
