@@ -1,10 +1,10 @@
 About Modularize-Hooks
 ----------------------
-This is a simple extension to [Modularize](https://github.com/Shinmera/modularize) that allows modules to define and trigger hooks, which other modules can... well, hook on to. While such a system is very easy to create for your own projects, it's a good idea to have a standard form of doing it that doesn't interfere in any other way. 
+This is a simple extension to [Modularize](https://shinmera.com/project/modularize) that allows modules to define and trigger hooks, which other modules can... well, hook on to. While such a system is very easy to create for your own projects, it's a good idea to have a standard form of doing it that doesn't interfere in any other way. 
 
 How To
 ------
-In order to define hooks, you need to have a module. See [Modularize](https://github.com/Shinmera/modularize) on how to get that set up. If the modularize-hooks system has already been loaded prior to your module definition, everything should be ready and set up. Otherwise, you may call `HOOKIFY` on your module to initialise it. Creating hooks is similar to creating generic functions:
+In order to define hooks, you need to have a module. See [Modularize](https://shinmera.com/project/modularize) on how to get that set up. If the modularize-hooks system has already been loaded prior to your module definition, everything should be ready and set up. Otherwise, you may call `HOOKIFY` on your module to initialise it. Creating hooks is similar to creating generic functions:
 
 ```
 (define-hook documentation-finished (project)
